@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting For Best</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #868693;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width:100%;
+        }
+
+        .app-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .candidate-card {
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .candidate-card img {
+            width: 150px;
+            height: 150px;
+            border-radius: 20%;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        .candidate-card h2 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .candidate-card button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .candidate-card button:hover {
+            background-color: #2980b9;
+        }
+
+        #resultsChart {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <header>
+            <h1>Vote for Your Candidate</h1>
+            <p>Cast your vote and watch the live results!</p>
+        </header>
+        <main class="voting-section">
+            <div class="candidate-card">
+                <img src="./images1.jpeg" 
+                     alt="Portrait of Candidate A">
+                <h2>Candidate A</h2>
+                <button onclick="vote('A')">Vote for A</button>
+            </div>
+            <div class="candidate-card">
+                <img src="./images2.jpeg" 
+                     alt="Portrait of Candidate B">
+                <h2>Candidate B</h2>
+                <button onclick="vote('B')">Vote for B</button>
+            </div>
+            <div class="candidate-card">
+                <img src="./image3.jpeg"
+                     alt="Portrait of Candidate C">
+                <h2>Candidate C</h2>
+                <button onclick="vote('C')">Vote for C</button>
+            </div>
+        </main>
+        <section class="results-section">
+            <h2>Live Voting Results</h2>
+            <canvas id="resultsChart"></canvas>
+            <p>Total Votes: <span id="totalVotes">0</span></p>
+            <h3>Votes Per Candidate:</h3>
+            <ul>
+                <li>Candidate A: <span id="votesA">0</span> votes (<span id="percentA">0%</span>)</li>
+                <li>Candidate B: <span id="votesB">0</span> votes (<span id="percentB">0%</span>)</li>
+                <li>Candidate C: <span id="votesC">0</span> votes (<span id="percentC">0%</span>)</li>
+            </ul>
+            <button id="reset" onclick="resetVotes()">Reset</button>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let votes = { A: 0, B: 0, C: 0 };
+        let totalVotes = 0;
+
+        // Initialize the chart
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        const resultsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Candidate A', 'Candidate B', 'Candidate C'],
+                datasets: [{
+                    label: 'Votes',
+                    data: [votes.A, votes.B, votes.C],
+                    backgroundColor: ['#3498db', '#e74c3c', '#2ecc71'],
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Function to handle voting
+        function vote(candidate) {
+            // Increment votes
+            votes[candidate]++;
+            totalVotes++;
+
+            // Update chart, vote counts, and percentages
+            updateResults();
+
+            // Show confirmation
+            showConfirmation(candidate);
+        }
+
+        // Update chart, vote counts, and percentages
+        function updateResults() {
+            // Update chart data
+            resultsChart.data.datasets[0].data = [votes.A, votes.B, votes.C];
+            resultsChart.update();
+
+            // Update total votes
+            document.getElementById('totalVotes').textContent = totalVotes;
+
+            // Update vote counts
+            document.getElementById('votesA').textContent = votes.A;
+            document.getElementById('votesB').textContent = votes.B;
+            document.getElementById('votesC').textContent = votes.C;
+
+            // Calculate and display percentages
+            const percentA = ((votes.A / totalVotes) * 100).toFixed(2) + '%';
+            const percentB = ((votes.B / totalVotes) * 100).toFixed(2) + '%';
+            const percentC = ((votes.C / totalVotes) * 100).toFixed(2) + '%';
+
+            document.getElementById('percentA').textContent = percentA;
+            document.getElementById('percentB').textContent = percentB;
+            document.getElementById('percentC').textContent = percentC;
+        }
+
+        // Show confirmation message
+        function showConfirmation(candidate) {
+            const confirmationMessage = document.createElement('div');
+            confirmationMessage.textContent = ' Thanks You voted for Candidate ${candidate}!';
+            confirmationMessage.style.position = 'fixed';
+            confirmationMessage.style.bottom = '20px';
+            confirmationMessage.style.left = '50%';
+            confirmationMessage.style.transform = 'translateX(-50%)';
+            confirmationMessage.style.backgroundColor = '#2ecc71';
+            confirmationMessage.style.color = 'white';
+            confirmationMessage.style.padding = '10px 20px';
+            confirmationMessage.style.borderRadius = '5px';
+            document.body.appendChild(confirmationMessage);
+
+            setTimeout(() => confirmationMessage.remove(), 1000);
+        }
+
+        // Reset votes
+        function resetVotes() {
+            votes = { A: 0, B: 0, C: 0 };
+            totalVotes = 0;
+            updateResults();
+            alert("Votes have been reset!");
+        }
+    </script>
+</body>
+</html>
